@@ -1,0 +1,108 @@
+import { json } from '@sveltejs/kit';
+import type { RequestHandler } from './$types';
+import { db } from '$lib/database/connection';
+import { posts, nutritionReviews, users } from '$lib/database/schema';
+import { eq, desc } from 'drizzle-orm';
+
+// GET /api/mobile/posts - Get all posts for a user
+export const GET: RequestHandler = async ({ url }) => {
+	const userEmail = url.searchParams.get('email');
+
+	if (!userEmail) {
+		return json({ error: 'Email parameter is required' }, { status: 400 });
+	}
+
+	try {
+		// Find user by email
+		const user = await db.query.users.findFirst({
+			where: eq(users.email, userEmail)
+		});
+
+		if (!user) {
+			return json({ error: 'User not found' }, { status: 404 });
+		}
+
+		// Get posts for user with reviews
+		const userPosts = await db.query.posts.findMany({
+			where: eq(posts.userId, user.id),
+			orderBy: [desc(posts.createdAt)],
+			with: {
+				reviews: true
+			}
+		});
+
+		// Transform to mobile app format
+		const transformedPosts = userPosts.map(post => ({
+			id: post.id,
+			type: post.type,
+			content: post.content,
+			title: post.title,
+			date: formatDate(post.createdAt),
+			testId: post.testId,
+			hasReview: post.reviews.length > 0,
+			reviewId: post.reviews[0]?.id
+		}));
+
+		return json({ posts: transformedPosts });
+	} catch (error) {
+		console.error('Error fetching posts:', error);
+		return json({ error: 'Failed to fetch posts' }, { status: 500 });
+	}
+};
+
+// POST /api/mobile/posts - Create a new post
+export const POST: RequestHandler = async ({ request }) => {
+	try {
+		const data = await request.json();
+		const { email, title, type, content, testId } = data;
+
+		if (!email || !title || !type || !content) {
+			return json({ error: 'Missing required fields' }, { status: 400 });
+		}
+
+		// Find user by email
+		const user = await db.query.users.findFirst({
+			where: eq(users.email, email)
+		});
+
+		if (!user) {
+			return json({ error: 'User not found' }, { status: 404 });
+		}
+
+		// Create post
+		const [newPost] = await db
+			.insert(posts)
+			.values({
+				userId: user.id,
+				title,
+				type,
+				content,
+				testId: testId || null,
+				processed: false
+			})
+			.returning();
+
+		return json({ post: newPost }, { status: 201 });
+	} catch (error) {
+		console.error('Error creating post:', error);
+		return json({ error: 'Failed to create post' }, { status: 500 });
+	}
+};
+
+function formatDate(date: Date): string {
+	const now = new Date();
+	const diff = now.getTime() - date.getTime();
+	const minutes = Math.floor(diff / 60000);
+	const hours = Math.floor(diff / 3600000);
+	const days = Math.floor(diff / 86400000);
+
+	if (minutes < 60) {
+		return `${minutes} минут назад`;
+	} else if (hours < 24) {
+		return `${hours} часов назад`;
+	} else if (days === 1) {
+		return 'Вчера';
+	} else {
+		return `${days} дня назад`;
+	}
+}
