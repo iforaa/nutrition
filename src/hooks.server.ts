@@ -1,4 +1,1 @@
-import { startPdfProcessor } from '$lib/jobs/pdf-processor';
-
-// Start the PDF processor when the server starts
-startPdfProcessor();
+// PDF processing is now done on-demand via API endpoints

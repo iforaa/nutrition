@@ -4,7 +4,8 @@ import type { Actions } from './$types';
 import { getSessionUser } from '$lib/auth/session';
 import { db } from '$lib/database/connection';
 import { users } from '$lib/database/schema';
-import { saveUploadedFile } from '$lib/utils/file-server';
+
+const CLOUDFLARE_WORKER_URL = 'https://orange-voice-eda1.igor-n-kuz8044.workers.dev';
 
 export const actions: Actions = {
   default: async (event) => {
@@ -32,7 +33,21 @@ export const actions: Actions = {
           return fail(400, { error: 'File too large. Maximum size is 5MB.' });
         }
 
-        profilePicturePath = await saveUploadedFile(profilePicture, 'profile-pictures');
+        // Upload to Cloudflare
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', profilePicture);
+
+        const uploadResponse = await fetch(`${CLOUDFLARE_WORKER_URL}/upload`, {
+          method: 'POST',
+          body: uploadFormData,
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to upload to Cloudflare');
+        }
+
+        const uploadResult = await uploadResponse.json();
+        profilePicturePath = uploadResult.url;
       } catch (error) {
         console.error('Error uploading profile picture:', error);
         return fail(500, { error: 'Failed to upload profile picture' });

@@ -1,4 +1,4 @@
-import { LLM_API_KEY, UPLOAD_DIR } from '$env/static/private';
+import { LLM_API_KEY } from '$env/static/private';
 import fs from 'fs';
 import path from 'path';
 
@@ -61,14 +61,7 @@ export async function extractTestDataFromPDF(pdfPath: string): Promise<Extracted
       } else if (relativePath.startsWith('uploads/')) {
         relativePath = relativePath.substring('uploads/'.length);
       }
-      const fullPath = path.join(UPLOAD_DIR, relativePath);
-      console.log('Full PDF path:', fullPath);
-
-      if (!fs.existsSync(fullPath)) {
-        throw new Error(`PDF file not found at: ${fullPath}`);
-      }
-      pdfBuffer = fs.readFileSync(fullPath);
-      console.log('PDF file size:', pdfBuffer.length, 'bytes');
+      throw new Error(`Local file paths are no longer supported. Please use Cloudflare URLs.`);
     }
 
     // Extract text from PDF using PDF.js with Node.js polyfills
@@ -230,42 +223,7 @@ export async function analyzeFoodFromImage(imagePath: string): Promise<FoodAnaly
       console.log('Image fetched, size:', imageBuffer.length, 'bytes');
       base64Image = imageBuffer.toString('base64');
     } else {
-      // Local file path
-      console.log('Local file path detected');
-
-      // The imagePath from database is like: /uploads/af8ebfcd-.../food.jpg
-      // We need to remove the /uploads prefix and use UPLOAD_DIR instead
-      let relativePath = imagePath;
-      if (relativePath.startsWith('/uploads/')) {
-        relativePath = relativePath.substring('/uploads/'.length);
-      } else if (relativePath.startsWith('uploads/')) {
-        relativePath = relativePath.substring('uploads/'.length);
-      }
-      console.log('Relative path:', relativePath);
-
-      // Join with UPLOAD_DIR (which is ./uploads)
-      const fullPath = path.join(UPLOAD_DIR, relativePath);
-      console.log('Full image path:', fullPath);
-      console.log('Path exists?', fs.existsSync(fullPath));
-
-      // Check if file exists
-      if (!fs.existsSync(fullPath)) {
-        // List directory contents for debugging
-        const dirPath = path.dirname(fullPath);
-        console.log('Directory path:', dirPath);
-        if (fs.existsSync(dirPath)) {
-          console.log('Directory contents:', fs.readdirSync(dirPath));
-        } else {
-          console.log('Directory does not exist');
-        }
-        throw new Error(`Image file not found at: ${fullPath}`);
-      }
-
-      // Read the image file and convert to base64
-      console.log('Reading image file...');
-      const imageBuffer = fs.readFileSync(fullPath);
-      console.log('Image file size:', imageBuffer.length, 'bytes');
-      base64Image = imageBuffer.toString('base64');
+      throw new Error(`Local file paths are no longer supported. Please use Cloudflare URLs.`);
     }
 
     // Send image to GPT-4o Vision for analysis
