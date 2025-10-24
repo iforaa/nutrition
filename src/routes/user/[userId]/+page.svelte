@@ -23,6 +23,8 @@
   let analyzing: { [key: string]: boolean } = {};
   let expandedPosts: { [key: string]: boolean } = {};
   let showQuestionnaire = false;
+  let showCreatePostForm = false;
+  let creatingPost = false;
 
   function formatDate(date: string | Date): string {
     return new Date(date).toLocaleDateString('ru-RU', {
@@ -76,14 +78,27 @@
         <h1>{data.user.name}</h1>
         <span class="user-email">{data.user.email}</span>
       </div>
-      {#if data.user.questionnaire}
+      <div class="header-actions">
         <button
-          class="questionnaire-toggle"
-          on:click={() => showQuestionnaire = !showQuestionnaire}
+          class="create-post-toggle-header"
+          on:click={() => showCreatePostForm = !showCreatePostForm}
         >
-          {showQuestionnaire ? 'Скрыть анкету' : 'Показать анкету'}
+          {#if showCreatePostForm}
+            Отменить
+          {:else}
+            <Plus class="inline-icon" />
+            Создать пост
+          {/if}
         </button>
-      {/if}
+        {#if data.user.questionnaire}
+          <button
+            class="questionnaire-toggle"
+            on:click={() => showQuestionnaire = !showQuestionnaire}
+          >
+            {showQuestionnaire ? 'Скрыть анкету' : 'Показать анкету'}
+          </button>
+        {/if}
+      </div>
     </div>
 
     {#if showQuestionnaire && data.user.questionnaire}
@@ -97,6 +112,86 @@
             </div>
           {/each}
         </div>
+      </div>
+    {/if}
+
+    {#if showCreatePostForm}
+      <div class="create-post-section">
+        <form
+        method="POST"
+        action="?/createPost"
+        enctype="multipart/form-data"
+        class="create-post-form"
+        use:enhance={() => {
+          creatingPost = true;
+
+          return async ({ result, update }) => {
+            creatingPost = false;
+
+            if (result.type === 'success') {
+              showCreatePostForm = false;
+              alert('Пост успешно создан!');
+            } else if (result.type === 'failure') {
+              alert('Ошибка создания поста: ' + (result.data?.error || 'Неизвестная ошибка'));
+            }
+
+            await update();
+          };
+        }}
+      >
+        <div class="form-group">
+          <label for="title">Название поста *</label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            required
+            disabled={creatingPost}
+            placeholder="Например: Завтрак, 24.10.2025"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="type">Тип *</label>
+          <select id="type" name="type" required disabled={creatingPost}>
+            <option value="image">Фото еды</option>
+            <option value="pdf">PDF анализ</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="file">Файл *</label>
+          <input
+            type="file"
+            id="file"
+            name="file"
+            accept="image/*,application/pdf"
+            required
+            disabled={creatingPost}
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="description">Описание (необязательно)</label>
+          <textarea
+            id="description"
+            name="description"
+            rows="3"
+            disabled={creatingPost}
+            placeholder="Добавьте описание..."
+          ></textarea>
+        </div>
+
+        <button type="submit" class="submit-post-button" disabled={creatingPost}>
+          {#if creatingPost}
+            <Clock class="inline-icon" />
+            Создание...
+          {:else}
+            <Plus class="inline-icon" />
+            Создать пост
+          {/if}
+        </button>
+      </form>
       </div>
     {/if}
   </div>
@@ -149,6 +244,35 @@
                 Ожидает
               </span>
             {/if}
+            <form
+              method="POST"
+              action="?/deletePost"
+              use:enhance={({ formData }) => {
+                if (!confirm('Вы уверены, что хотите удалить этот пост?')) {
+                  return () => {};
+                }
+                formData.append('postId', post.id);
+                deleting[post.id] = true;
+
+                return async ({ result, update }) => {
+                  deleting[post.id] = false;
+
+                  if (result.type === 'failure') {
+                    alert('Ошибка удаления поста: ' + (result.data?.error || 'Неизвестная ошибка'));
+                  }
+
+                  await update();
+                };
+              }}
+            >
+              <button type="submit" class="delete-post-button" disabled={deleting[post.id]}>
+                {#if deleting[post.id]}
+                  <Clock class="inline-icon" />
+                {:else}
+                  <Trash class="inline-icon" />
+                {/if}
+              </button>
+            </form>
           </div>
         </div>
 
@@ -156,9 +280,26 @@
 
         <!-- Preview for images -->
         {#if post.type === 'image'}
-          <div class="image-preview">
-            <img src={post.content} alt={post.title} />
+          <div class="image-gallery">
+            {#if post.photos && post.photos.length > 0}
+              {#each post.photos as photo}
+                <div class="image-preview">
+                  <img src={photo} alt={post.title} />
+                </div>
+              {/each}
+            {:else}
+              <div class="image-preview">
+                <img src={post.content} alt={post.title} />
+              </div>
+            {/if}
           </div>
+
+          {#if post.description}
+            <div class="post-description">
+              <strong>Описание:</strong>
+              <p>{post.description}</p>
+            </div>
+          {/if}
 
           <!-- Analyze food button for images -->
           <form
@@ -552,6 +693,30 @@
     gap: 1rem;
   }
 
+  .header-actions {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .create-post-toggle-header {
+    padding: 0.5rem 1rem;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+  }
+
+  .create-post-toggle-header:hover {
+    background: #45a049;
+  }
+
   .questionnaire-toggle {
     padding: 0.5rem 1rem;
     background: transparent;
@@ -610,6 +775,81 @@
     font-size: 0.875rem;
     color: #2c3e50;
     font-weight: 500;
+  }
+
+  .create-post-section {
+    background: white;
+    border: 1px solid #e3e8ee;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .create-post-form {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e3e8ee;
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid #e3e8ee;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.875rem;
+    transition: border-color 0.15s ease;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: #4CAF50;
+  }
+
+  .form-group textarea {
+    resize: vertical;
+  }
+
+  .submit-post-button {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.9375rem;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1.5rem;
+  }
+
+  .submit-post-button:hover:not(:disabled) {
+    background: #45a049;
+  }
+
+  .submit-post-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   .posts-section {
@@ -701,6 +941,28 @@
     background: #0056b3;
   }
 
+  .delete-post-button {
+    padding: 0.375rem 0.625rem;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8125rem;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+  }
+
+  .delete-post-button:hover:not(:disabled) {
+    background: #c82333;
+  }
+
+  .delete-post-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
   .post-icon {
     display: flex;
     align-items: center;
@@ -784,8 +1046,14 @@
     font-weight: 500;
   }
 
-  .image-preview {
+  .image-gallery {
     margin-top: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+  }
+
+  .image-preview {
     border-radius: 8px;
     overflow: hidden;
     background: #f8f9fa;
@@ -796,12 +1064,35 @@
   }
 
   .image-preview img {
-    max-width: 400px;
+    max-width: 100%;
     width: auto;
     height: auto;
     max-height: 400px;
     object-fit: contain;
     display: block;
+  }
+
+  .post-description {
+    margin-top: 1rem;
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid #e3e8ee;
+  }
+
+  .post-description strong {
+    display: block;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  .post-description p {
+    margin: 0;
+    color: #2c3e50;
+    line-height: 1.5;
+    font-size: 0.875rem;
   }
 
   .review-form {

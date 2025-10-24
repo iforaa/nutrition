@@ -38,6 +38,110 @@ export const load: PageServerLoad = async (event) => {
 };
 
 export const actions: Actions = {
+  createPost: async ({ request, params }) => {
+    console.log('=== createPost action started ===');
+    const formData = await request.formData();
+    const { userId } = params;
+    const file = formData.get('file') as File;
+    const title = formData.get('title')?.toString();
+    const type = formData.get('type')?.toString() as 'image' | 'pdf';
+    const description = formData.get('description')?.toString();
+
+    console.log('User ID:', userId);
+    console.log('Title:', title);
+    console.log('Type:', type);
+    console.log('Description:', description);
+    console.log('File:', file ? `${file.name} (${file.size} bytes)` : 'No file');
+
+    if (!file || !title || !type) {
+      console.error('Missing required fields');
+      return fail(400, { error: 'All fields are required' });
+    }
+
+    try {
+      // Upload file to Cloudflare Worker
+      const CLOUDFLARE_WORKER_URL = 'https://orange-voice-eda1.igor-n-kuz8044.workers.dev';
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
+
+      console.log('Uploading file to Cloudflare...');
+      const uploadResponse = await fetch(`${CLOUDFLARE_WORKER_URL}/upload`, {
+        method: 'POST',
+        body: uploadFormData,
+      });
+
+      if (!uploadResponse.ok) {
+        const errorText = await uploadResponse.text();
+        console.error('Cloudflare upload error:', errorText);
+        return fail(500, { error: 'Failed to upload file to Cloudflare' });
+      }
+
+      const uploadResult = await uploadResponse.json();
+      const fileUrl = uploadResult.url;
+      console.log('File uploaded successfully:', fileUrl);
+
+      // Create post in database
+      console.log('Creating post in database...');
+      const [newPost] = await db
+        .insert(posts)
+        .values({
+          userId,
+          title,
+          type,
+          content: fileUrl,
+          photos: type === 'image' ? [fileUrl] : undefined,
+          description: description || null,
+          processed: false
+        })
+        .returning();
+
+      console.log('Post created successfully:', newPost.id);
+      console.log('=== createPost action completed successfully ===');
+      return { success: true, postId: newPost.id };
+
+    } catch (error) {
+      console.error('=== ERROR in createPost action ===');
+      console.error('Error:', error);
+      return fail(500, {
+        error: error instanceof Error ? error.message : 'Failed to create post'
+      });
+    }
+  },
+
+  deletePost: async ({ request }) => {
+    console.log('=== deletePost action started ===');
+    const formData = await request.formData();
+    const postId = formData.get('postId')?.toString();
+
+    console.log('Post ID:', postId);
+
+    if (!postId) {
+      console.error('No post ID provided');
+      return fail(400, { error: 'Post ID is required' });
+    }
+
+    try {
+      // Delete all reviews associated with the post
+      console.log('Deleting associated reviews...');
+      await db.delete(nutritionReviews).where(eq(nutritionReviews.postId, postId));
+
+      // Delete the post
+      console.log('Deleting post...');
+      await db.delete(posts).where(eq(posts.id, postId));
+
+      console.log('Post deleted successfully');
+      console.log('=== deletePost action completed successfully ===');
+      return { success: true, deleted: true };
+
+    } catch (error) {
+      console.error('=== ERROR in deletePost action ===');
+      console.error('Error:', error);
+      return fail(500, {
+        error: error instanceof Error ? error.message : 'Failed to delete post'
+      });
+    }
+  },
+
   addReview: async ({ request }) => {
     const formData = await request.formData();
     const postId = formData.get('postId')?.toString();

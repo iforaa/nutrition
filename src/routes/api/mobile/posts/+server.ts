@@ -40,7 +40,9 @@ export const GET: RequestHandler = async ({ url }) => {
 			date: formatDate(post.createdAt),
 			testId: post.testId,
 			hasReview: post.reviews.length > 0,
-			reviewId: post.reviews[0]?.id
+			reviewId: post.reviews[0]?.id,
+			photos: post.photos as string[] | undefined,
+			description: post.description
 		}));
 
 		return json({ posts: transformedPosts });
@@ -102,7 +104,18 @@ function formatDate(date: Date): string {
 		return `${hours} часов назад`;
 	} else if (days === 1) {
 		return 'Вчера';
+	} else if (days < 7) {
+		// Show day of week for recent posts (within a week)
+		const dayNames = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+		const dayName = dayNames[date.getDay()];
+		return dayName;
 	} else {
-		return `${days} дня назад`;
+		// Show full date with day of week for older posts
+		const dayNames = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+		const dayName = dayNames[date.getDay()];
+		const day = date.getDate().toString().padStart(2, '0');
+		const month = (date.getMonth() + 1).toString().padStart(2, '0');
+		const year = date.getFullYear();
+		return `${dayName}, ${day}.${month}.${year}`;
 	}
 }
