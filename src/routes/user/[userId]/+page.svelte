@@ -22,7 +22,6 @@
   let deleting: { [key: string]: boolean } = {};
   let analyzing: { [key: string]: boolean } = {};
   let expandedPosts: { [key: string]: boolean } = {};
-  let showQuestionnaire = false;
   let showCreatePostForm = false;
   let creatingPost = false;
 
@@ -91,29 +90,12 @@
           {/if}
         </button>
         {#if data.user.questionnaire}
-          <button
-            class="questionnaire-toggle"
-            on:click={() => showQuestionnaire = !showQuestionnaire}
-          >
-            {showQuestionnaire ? 'Скрыть анкету' : 'Показать анкету'}
-          </button>
+          <a href="/user/{data.user.id}/questionnaire" class="questionnaire-button">
+            Анкета пользователя
+          </a>
         {/if}
       </div>
     </div>
-
-    {#if showQuestionnaire && data.user.questionnaire}
-      <div class="questionnaire-section">
-        <h3 class="questionnaire-title">Анкета пользователя</h3>
-        <div class="questionnaire-grid">
-          {#each Object.entries(data.user.questionnaire) as [key, value]}
-            <div class="questionnaire-item">
-              <span class="question-id">Вопрос {key}</span>
-              <span class="question-answer">{value}</span>
-            </div>
-          {/each}
-        </div>
-      </div>
-    {/if}
 
     {#if showCreatePostForm}
       <div class="create-post-section">
@@ -717,64 +699,23 @@
     background: #45a049;
   }
 
-  .questionnaire-toggle {
+  .questionnaire-button {
     padding: 0.5rem 1rem;
-    background: transparent;
-    color: #2196F3;
-    border: 1px solid #e3e8ee;
+    background: #2196F3;
+    color: white;
+    border: none;
     border-radius: 6px;
-    font-weight: 500;
     cursor: pointer;
+    font-weight: 500;
     font-size: 0.875rem;
     transition: all 0.15s ease;
     white-space: nowrap;
+    text-decoration: none;
+    display: inline-block;
   }
 
-  .questionnaire-toggle:hover {
-    background: #f8f9fa;
-    border-color: #2196F3;
-  }
-
-  .questionnaire-section {
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid #e3e8ee;
-  }
-
-  .questionnaire-title {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: #2c3e50;
-    margin: 0 0 1rem 0;
-    letter-spacing: -0.01em;
-  }
-
-  .questionnaire-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 0.75rem;
-  }
-
-  .questionnaire-item {
-    background: #f8f9fa;
-    padding: 0.875rem 1rem;
-    border-radius: 6px;
-    border: 1px solid #e3e8ee;
-  }
-
-  .question-id {
-    display: block;
-    font-size: 0.75rem;
-    color: #6c757d;
-    margin-bottom: 0.375rem;
-    font-weight: 500;
-  }
-
-  .question-answer {
-    display: block;
-    font-size: 0.875rem;
-    color: #2c3e50;
-    font-weight: 500;
+  .questionnaire-button:hover {
+    background: #1976D2;
   }
 
   .create-post-section {
