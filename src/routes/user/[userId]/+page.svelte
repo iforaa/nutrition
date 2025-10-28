@@ -186,13 +186,12 @@
         </div>
 
         <div class="form-group">
-          <label for="file">Файл *</label>
+          <label for="file">Файл</label>
           <input
             type="file"
             id="file"
             name="file"
             accept="image/*,application/pdf"
-            required
             disabled={creatingPost}
           />
         </div>

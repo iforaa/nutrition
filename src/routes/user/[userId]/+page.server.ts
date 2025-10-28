@@ -50,42 +50,47 @@ export const actions: Actions = {
     const tag = formData.get('tag')?.toString() || null;
     const description = formData.get('description')?.toString();
 
-    // Auto-detect type from file
-    const type: 'image' | 'pdf' = file?.type?.startsWith('image/') ? 'image' : 'pdf';
-
     console.log('User ID:', userId);
     console.log('Title:', title);
-    console.log('Type:', type);
     console.log('Tag:', tag);
     console.log('Description:', description);
-    console.log('File:', file ? `${file.name} (${file.size} bytes)` : 'No file');
+    console.log('File:', file && file.size > 0 ? `${file.name} (${file.size} bytes)` : 'No file');
 
-    if (!file || !title) {
+    if (!title) {
       console.error('Missing required fields');
-      return fail(400, { error: 'All fields are required' });
+      return fail(400, { error: 'Title is required' });
     }
 
     try {
-      // Upload file to Cloudflare Worker
-      const CLOUDFLARE_WORKER_URL = 'https://orange-voice-eda1.igor-n-kuz8044.workers.dev';
-      const uploadFormData = new FormData();
-      uploadFormData.append('file', file);
+      let fileUrl: string | null = null;
+      let type: 'image' | 'pdf' | null = null;
 
-      console.log('Uploading file to Cloudflare...');
-      const uploadResponse = await fetch(`${CLOUDFLARE_WORKER_URL}/upload`, {
-        method: 'POST',
-        body: uploadFormData,
-      });
+      // Upload file if provided
+      if (file && file.size > 0) {
+        // Auto-detect type from file
+        type = file.type?.startsWith('image/') ? 'image' : 'pdf';
+        console.log('Type:', type);
 
-      if (!uploadResponse.ok) {
-        const errorText = await uploadResponse.text();
-        console.error('Cloudflare upload error:', errorText);
-        return fail(500, { error: 'Failed to upload file to Cloudflare' });
+        const CLOUDFLARE_WORKER_URL = 'https://orange-voice-eda1.igor-n-kuz8044.workers.dev';
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', file);
+
+        console.log('Uploading file to Cloudflare...');
+        const uploadResponse = await fetch(`${CLOUDFLARE_WORKER_URL}/upload`, {
+          method: 'POST',
+          body: uploadFormData,
+        });
+
+        if (!uploadResponse.ok) {
+          const errorText = await uploadResponse.text();
+          console.error('Cloudflare upload error:', errorText);
+          return fail(500, { error: 'Failed to upload file to Cloudflare' });
+        }
+
+        const uploadResult = await uploadResponse.json();
+        fileUrl = uploadResult.url;
+        console.log('File uploaded successfully:', fileUrl);
       }
-
-      const uploadResult = await uploadResponse.json();
-      const fileUrl = uploadResult.url;
-      console.log('File uploaded successfully:', fileUrl);
 
       // Create post in database
       console.log('Creating post in database...');
@@ -94,9 +99,9 @@ export const actions: Actions = {
         .values({
           userId,
           title,
-          type,
-          content: fileUrl,
-          photos: type === 'image' ? [fileUrl] : undefined,
+          type: type || 'image', // Default to image if no file
+          content: fileUrl || '', // Empty string if no file
+          photos: type === 'image' && fileUrl ? [fileUrl] : undefined,
           description: description || null,
           tag: tag || null,
           processed: false
