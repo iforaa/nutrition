@@ -42,7 +42,9 @@ export const GET: RequestHandler = async ({ url }) => {
 			hasReview: post.reviews.length > 0,
 			reviewId: post.reviews[0]?.id,
 			photos: post.photos as string[] | undefined,
-			description: post.description
+			description: post.description,
+			commentsAllowed: post.commentsAllowed !== false,
+			tag: post.tag
 		}));
 
 		return json({ posts: transformedPosts });

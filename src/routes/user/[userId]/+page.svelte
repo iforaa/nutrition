@@ -24,6 +24,14 @@
   let expandedPosts: { [key: string]: boolean } = {};
   let showCreatePostForm = false;
   let creatingPost = false;
+  let selectedTags: Set<string> = new Set();
+
+  $: filteredPosts = selectedTags.size === 0
+    ? data.posts
+    : data.posts.filter(post => {
+        if (!post.tag) return selectedTags.has('untagged');
+        return selectedTags.has(post.tag);
+      });
 
   function formatDate(date: string | Date): string {
     return new Date(date).toLocaleDateString('ru-RU', {
@@ -59,6 +67,44 @@
 
   function togglePost(postId: string) {
     expandedPosts[postId] = !expandedPosts[postId];
+  }
+
+  function toggleTag(tag: string) {
+    const newTags = new Set(selectedTags);
+    if (newTags.has(tag)) {
+      newTags.delete(tag);
+    } else {
+      newTags.add(tag);
+    }
+    selectedTags = newTags;
+  }
+
+  async function updatePostSettings(postId: string, settings: { tag?: string | null, commentsAllowed?: boolean }) {
+    try {
+      const response = await fetch(`/api/posts/${postId}/settings`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update post settings');
+      }
+
+      // Update local data
+      const postIndex = data.posts.findIndex(p => p.id === postId);
+      if (postIndex !== -1) {
+        if (settings.tag !== undefined) {
+          data.posts[postIndex].tag = settings.tag;
+        }
+        if (settings.commentsAllowed !== undefined) {
+          data.posts[postIndex].commentsAllowed = settings.commentsAllowed;
+        }
+      }
+    } catch (error) {
+      console.error('Error updating post settings:', error);
+      alert('Ошибка обновления настроек поста');
+    }
   }
 </script>
 
@@ -178,9 +224,47 @@
     {/if}
   </div>
 
+  <!-- Tag Filters -->
+  <div class="tag-filters">
+    <span class="filter-label">Фильтр по тегам:</span>
+    <button
+      class="tag-filter-button"
+      class:active={selectedTags.has('food')}
+      on:click={() => toggleTag('food')}
+    >
+      🍕 Еда
+    </button>
+    <button
+      class="tag-filter-button"
+      class:active={selectedTags.has('test')}
+      on:click={() => toggleTag('test')}
+    >
+      📋 Анализ
+    </button>
+    <button
+      class="tag-filter-button"
+      class:active={selectedTags.has('question')}
+      on:click={() => toggleTag('question')}
+    >
+      ❓ Вопрос
+    </button>
+    <button
+      class="tag-filter-button"
+      class:active={selectedTags.has('untagged')}
+      on:click={() => toggleTag('untagged')}
+    >
+      ⚪ Без тега
+    </button>
+    {#if selectedTags.size > 0}
+      <button class="clear-filters-button" on:click={() => selectedTags = new Set()}>
+        Сбросить
+      </button>
+    {/if}
+  </div>
+
   <!-- Posts List -->
   <div class="posts-section">
-    {#each data.posts as post}
+    {#each filteredPosts as post}
       <div class="post-item" class:reviewed={post.reviews.length > 0}>
         <div class="post-header" on:click={() => togglePost(post.id)}>
           <div class="post-info">
@@ -254,6 +338,34 @@
         </div>
 
         {#if expandedPosts[post.id]}
+
+        <!-- Post Settings -->
+        <div class="post-settings">
+          <div class="setting-group">
+            <label for="tag-{post.id}">Тег:</label>
+            <select
+              id="tag-{post.id}"
+              value={post.tag || ''}
+              on:change={(e) => updatePostSettings(post.id, { tag: e.currentTarget.value || null })}
+              class="tag-select"
+            >
+              <option value="">Без тега</option>
+              <option value="food">🍕 Еда</option>
+              <option value="test">📋 Анализ</option>
+              <option value="question">❓ Вопрос</option>
+            </select>
+          </div>
+          <div class="setting-group">
+            <label>
+              <input
+                type="checkbox"
+                checked={post.commentsAllowed !== false}
+                on:change={(e) => updatePostSettings(post.id, { commentsAllowed: e.currentTarget.checked })}
+              />
+              Разрешить комментарии пользователю
+            </label>
+          </div>
+        </div>
 
         <!-- Preview for images -->
         {#if post.type === 'image'}
@@ -1014,6 +1126,106 @@
   .formatted-text {
     white-space: pre-wrap;
     word-wrap: break-word;
+  }
+
+  .post-settings {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    border: 1px solid #e3e8ee;
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  .setting-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .setting-group label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #495057;
+  }
+
+  .tag-select {
+    padding: 0.375rem 0.75rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    background: white;
+    cursor: pointer;
+  }
+
+  .tag-select:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+  }
+
+  .setting-group input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+
+  .tag-filters {
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    margin: 1.5rem 0;
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+
+  .filter-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #495057;
+  }
+
+  .tag-filter-button {
+    padding: 0.5rem 1rem;
+    border: 2px solid #e3e8ee;
+    border-radius: 20px;
+    background: white;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .tag-filter-button:hover {
+    border-color: #4CAF50;
+    background: #f8fdf9;
+  }
+
+  .tag-filter-button.active {
+    border-color: #4CAF50;
+    background: #4CAF50;
+    color: white;
+  }
+
+  .clear-filters-button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 20px;
+    background: #dc3545;
+    color: white;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .clear-filters-button:hover {
+    background: #c82333;
   }
 
   .review-form {
