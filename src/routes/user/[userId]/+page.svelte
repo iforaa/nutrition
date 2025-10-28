@@ -295,7 +295,7 @@
             </div>
           </div>
           <div class="post-actions" on:click|stopPropagation>
-            {#if post.type === 'pdf'}
+            {#if post.type === 'pdf' && post.content}
               <a href={post.content} target="_blank" class="view-link">
                 <Document class="inline-icon" />
                 Открыть PDF
@@ -374,8 +374,16 @@
           </div>
         </div>
 
+        <!-- Show description first if no content -->
+        {#if post.description}
+          <div class="post-description">
+            <strong>Описание:</strong>
+            <p class="formatted-text">{post.description}</p>
+          </div>
+        {/if}
+
         <!-- Preview for images -->
-        {#if post.type === 'image'}
+        {#if post.type === 'image' && post.content}
           <div class="image-gallery">
             {#if post.photos && post.photos.length > 0}
               {#each post.photos as photo}
@@ -389,13 +397,7 @@
               </a>
             {/if}
           </div>
-
-          {#if post.description}
-            <div class="post-description">
-              <strong>Описание:</strong>
-              <p class="formatted-text">{post.description}</p>
-            </div>
-          {/if}
+        {/if}
 
           <!-- Analyze food button - HIDDEN FOR NOW -->
           <!-- <form
@@ -489,7 +491,7 @@
               {/if}
             </div>
           {/if}
-        {:else if post.type === 'pdf'}
+        {:else if post.type === 'pdf' && post.content}
           <!-- Extract button for PDFs -->
           <form
             method="POST"
