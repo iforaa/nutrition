@@ -33,8 +33,10 @@ export const posts = pgTable('posts', {
 export const nutritionReviews = pgTable('nutrition_reviews', {
   id: uuid('id').primaryKey().defaultRandom(),
   postId: uuid('post_id').references(() => posts.id).notNull(),
+  userId: uuid('user_id').references(() => users.id), // For user comments
   reviewerName: varchar('reviewer_name', { length: 255 }).notNull().default('Доктор Виктория'),
-  reviewData: jsonb('review_data'), // Full review structure from mobile app
+  reviewData: jsonb('review_data'), // Full review structure from mobile app (or simple text for user comments)
+  isUserComment: boolean('is_user_comment').default(false).notNull(), // true = user comment, false = doctor review
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -56,6 +58,10 @@ export const nutritionReviewsRelations = relations(nutritionReviews, ({ one }) =
   post: one(posts, {
     fields: [nutritionReviews.postId],
     references: [posts.id],
+  }),
+  user: one(users, {
+    fields: [nutritionReviews.userId],
+    references: [users.id],
   }),
 }));
 
