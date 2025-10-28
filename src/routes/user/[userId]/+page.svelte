@@ -326,6 +326,20 @@
                 Ожидает
               </span>
             {/if}
+            <button
+              class="edit-post-button-header"
+              on:click|stopPropagation={() => {
+                editingPost[post.id] = !editingPost[post.id];
+                if (editingPost[post.id]) {
+                  editPostData[post.id] = {
+                    title: post.title,
+                    description: post.description || ''
+                  };
+                }
+              }}
+            >
+              Редактировать
+            </button>
             <form
               method="POST"
               action="?/deletePost"
@@ -389,8 +403,8 @@
         </div>
 
         <!-- Edit Post -->
-        <div class="edit-post-section">
-          {#if editingPost[post.id]}
+        {#if editingPost[post.id]}
+          <div class="edit-post-section">
             <form
               method="POST"
               action="?/updatePost"
@@ -442,21 +456,8 @@
                 </button>
               </div>
             </form>
-          {:else}
-            <button
-              class="edit-post-button"
-              on:click={() => {
-                editingPost[post.id] = true;
-                editPostData[post.id] = {
-                  title: post.title,
-                  description: post.description || ''
-                };
-              }}
-            >
-              Редактировать пост
-            </button>
-          {/if}
-        </div>
+          </div>
+        {/if}
 
         <!-- Show description first if no content -->
         {#if post.description && !editingPost[post.id]}
@@ -1117,6 +1118,24 @@
 
   .view-link:hover {
     background: #0056b3;
+  }
+
+  .edit-post-button-header {
+    padding: 0.375rem 0.75rem;
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+  }
+
+  .edit-post-button-header:hover {
+    background: #5a6268;
   }
 
   .delete-post-button {
