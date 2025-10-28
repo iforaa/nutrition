@@ -115,9 +115,15 @@
 <div class="user-detail-container">
   <!-- Header with back button -->
   <div class="header">
-    <a href="/" class="back-button">
-      ← Назад к списку
-    </a>
+    {#if showCreatePostForm}
+      <button class="back-button" on:click={() => showCreatePostForm = false}>
+        ← Назад к постам
+      </button>
+    {:else}
+      <a href="/" class="back-button">
+        ← Назад к списку
+      </a>
+    {/if}
     <div class="user-info-header">
       <div class="user-info">
         <h1>{data.user.name}</h1>
@@ -180,14 +186,6 @@
         </div>
 
         <div class="form-group">
-          <label for="type">Тип *</label>
-          <select id="type" name="type" required disabled={creatingPost}>
-            <option value="image">Фото еды</option>
-            <option value="pdf">PDF анализ</option>
-          </select>
-        </div>
-
-        <div class="form-group">
           <label for="file">Файл *</label>
           <input
             type="file"
@@ -197,6 +195,16 @@
             required
             disabled={creatingPost}
           />
+        </div>
+
+        <div class="form-group">
+          <label for="tag">Тег</label>
+          <select id="tag" name="tag" disabled={creatingPost}>
+            <option value="">Без тега</option>
+            <option value="food">🍕 Еда</option>
+            <option value="test">📋 Анализ</option>
+            <option value="question">❓ Вопрос</option>
+          </select>
         </div>
 
         <div class="form-group">
@@ -732,6 +740,11 @@
     margin-bottom: 1rem;
     font-size: 0.875rem;
     transition: color 0.15s ease;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-family: inherit;
   }
 
   .back-button:hover {

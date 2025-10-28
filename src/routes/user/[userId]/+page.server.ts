@@ -47,16 +47,20 @@ export const actions: Actions = {
     const { userId } = params;
     const file = formData.get('file') as File;
     const title = formData.get('title')?.toString();
-    const type = formData.get('type')?.toString() as 'image' | 'pdf';
+    const tag = formData.get('tag')?.toString() || null;
     const description = formData.get('description')?.toString();
+
+    // Auto-detect type from file
+    const type: 'image' | 'pdf' = file?.type?.startsWith('image/') ? 'image' : 'pdf';
 
     console.log('User ID:', userId);
     console.log('Title:', title);
     console.log('Type:', type);
+    console.log('Tag:', tag);
     console.log('Description:', description);
     console.log('File:', file ? `${file.name} (${file.size} bytes)` : 'No file');
 
-    if (!file || !title || !type) {
+    if (!file || !title) {
       console.error('Missing required fields');
       return fail(400, { error: 'All fields are required' });
     }
@@ -94,6 +98,7 @@ export const actions: Actions = {
           content: fileUrl,
           photos: type === 'image' ? [fileUrl] : undefined,
           description: description || null,
+          tag: tag || null,
           processed: false
         })
         .returning();
