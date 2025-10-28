@@ -26,7 +26,10 @@ export const load: PageServerLoad = async (event) => {
     orderBy: [desc(posts.createdAt)],
     with: {
       reviews: {
-        orderBy: [desc(nutritionReviews.createdAt)]
+        orderBy: [desc(nutritionReviews.createdAt)],
+        with: {
+          user: true
+        }
       }
     }
   });

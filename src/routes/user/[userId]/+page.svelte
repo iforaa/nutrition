@@ -636,11 +636,16 @@
         <!-- Show existing reviews -->
         {#if post.reviews.length > 0}
           <div class="existing-reviews">
-            <h4 class="reviews-title">История проверок ({post.reviews.length})</h4>
+            <h4 class="reviews-title">Обсуждение ({post.reviews.length})</h4>
             {#each post.reviews as review, index}
               <div class="existing-review">
                 <div class="review-content">
-                  <small class="review-date">Проверка #{post.reviews.length - index} • {formatDate(review.createdAt)}</small>
+                  <small class="review-date">
+                    {review.user?.name || review.reviewerName} • {formatDate(review.createdAt)}
+                    {#if review.isUserComment}
+                      <span class="comment-badge">Комментарий</span>
+                    {/if}
+                  </small>
                   <p style="white-space: pre-wrap;">{getReviewText(review.reviewData)}</p>
                 </div>
               </div>
@@ -1062,6 +1067,20 @@
     color: #155724;
     font-size: 0.75rem;
     font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .comment-badge {
+    display: inline-block;
+    background-color: #e3f2fd;
+    color: #1976d2;
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
   }
 
   .image-gallery {
