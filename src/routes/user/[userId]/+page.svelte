@@ -1,5 +1,6 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
+  import { slide } from 'svelte/transition';
   import type { PageData } from './$types';
   import ChevronRight from '$lib/components/icons/ChevronRight.svelte';
   import ChevronDown from '$lib/components/icons/ChevronDown.svelte';
@@ -395,6 +396,7 @@
         </div>
 
         {#if expandedPosts[post.id]}
+        <div transition:slide={{ duration: 200 }}>
 
         <!-- Edit Post Form -->
         {#if editingPost[post.id]}
@@ -837,6 +839,7 @@
             {/if}
           </button>
         </form>
+        </div>
         {/if}
       </div>
     {/each}
