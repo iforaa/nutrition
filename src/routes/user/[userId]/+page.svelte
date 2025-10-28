@@ -327,6 +327,26 @@
               </span>
             {/if}
             {#if expandedPosts[post.id]}
+              <select
+                id="tag-{post.id}"
+                value={post.tag || ''}
+                on:change={(e) => updatePostSettings(post.id, { tag: e.currentTarget.value || null })}
+                class="tag-select-header"
+                on:click|stopPropagation
+              >
+                <option value="">Без тега</option>
+                <option value="food">🍕 Еда</option>
+                <option value="test">📋 Анализ</option>
+                <option value="question">❓ Вопрос</option>
+              </select>
+              <label class="comments-toggle-header" on:click|stopPropagation>
+                <input
+                  type="checkbox"
+                  checked={post.commentsAllowed !== false}
+                  on:change={(e) => updatePostSettings(post.id, { commentsAllowed: e.currentTarget.checked })}
+                />
+                <span>Комментарии</span>
+              </label>
               <button
                 class="edit-post-button-header"
                 on:click|stopPropagation={() => {
@@ -375,34 +395,6 @@
         </div>
 
         {#if expandedPosts[post.id]}
-
-        <!-- Post Settings -->
-        <div class="post-settings">
-          <div class="setting-group">
-            <label for="tag-{post.id}">Тег:</label>
-            <select
-              id="tag-{post.id}"
-              value={post.tag || ''}
-              on:change={(e) => updatePostSettings(post.id, { tag: e.currentTarget.value || null })}
-              class="tag-select"
-            >
-              <option value="">Без тега</option>
-              <option value="food">🍕 Еда</option>
-              <option value="test">📋 Анализ</option>
-              <option value="question">❓ Вопрос</option>
-            </select>
-          </div>
-          <div class="setting-group">
-            <label>
-              <input
-                type="checkbox"
-                checked={post.commentsAllowed !== false}
-                on:change={(e) => updatePostSettings(post.id, { commentsAllowed: e.currentTarget.checked })}
-              />
-              Разрешить комментарии пользователю
-            </label>
-          </div>
-        </div>
 
         <!-- Edit Post Form -->
         {#if editingPost[post.id]}
@@ -1120,6 +1112,53 @@
 
   .view-link:hover {
     background: #0056b3;
+  }
+
+  .tag-select-header {
+    padding: 0.375rem 0.5rem;
+    border: 1px solid #e3e8ee;
+    border-radius: 6px;
+    background: white;
+    font-size: 0.8125rem;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+    max-width: 150px;
+  }
+
+  .tag-select-header:hover {
+    border-color: #4CAF50;
+  }
+
+  .tag-select-header:focus {
+    outline: none;
+    border-color: #4CAF50;
+  }
+
+  .comments-toggle-header {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    background: white;
+    border: 1px solid #e3e8ee;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .comments-toggle-header:hover {
+    border-color: #4CAF50;
+  }
+
+  .comments-toggle-header input[type="checkbox"] {
+    cursor: pointer;
+    margin: 0;
+  }
+
+  .comments-toggle-header span {
+    font-weight: 500;
+    color: #2c3e50;
   }
 
   .edit-post-button-header {
