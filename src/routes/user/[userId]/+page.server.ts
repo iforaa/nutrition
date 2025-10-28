@@ -26,7 +26,7 @@ export const load: PageServerLoad = async (event) => {
     orderBy: [desc(posts.createdAt)],
     with: {
       reviews: {
-        orderBy: [desc(nutritionReviews.createdAt)],
+        orderBy: [nutritionReviews.createdAt], // Oldest first (asc)
         with: {
           user: true
         }

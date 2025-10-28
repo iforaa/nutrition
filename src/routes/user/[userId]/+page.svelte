@@ -638,13 +638,15 @@
           <div class="existing-reviews">
             <h4 class="reviews-title">Обсуждение ({post.reviews.length})</h4>
             {#each post.reviews as review, index}
-              <div class="existing-review">
+              <div class="existing-review" class:user-comment={review.isUserComment}>
                 <div class="review-content">
                   <small class="review-date">
-                    {review.user?.name || review.reviewerName} • {formatDate(review.createdAt)}
                     {#if review.isUserComment}
-                      <span class="comment-badge">Комментарий</span>
+                      👤
+                    {:else}
+                      👨‍⚕️
                     {/if}
+                    {review.user?.name || review.reviewerName} • {formatDate(review.createdAt)}
                   </small>
                   <p style="white-space: pre-wrap;">{getReviewText(review.reviewData)}</p>
                 </div>
@@ -1049,7 +1051,12 @@
     padding: 1rem;
     border-radius: 6px;
     margin-bottom: 0.75rem;
-    border-left: 4px solid #28a745;
+    border-left: 4px solid #4CAF50;
+  }
+
+  .existing-review.user-comment {
+    background: #f5f5f5;
+    border-left-color: #9E9E9E;
   }
 
   .existing-review:last-child {
@@ -1072,15 +1079,8 @@
     gap: 0.5rem;
   }
 
-  .comment-badge {
-    display: inline-block;
-    background-color: #e3f2fd;
-    color: #1976d2;
-    padding: 0.125rem 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 0.625rem;
-    font-weight: 600;
-    text-transform: uppercase;
+  .user-comment .review-date {
+    color: #666;
   }
 
   .image-gallery {
