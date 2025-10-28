@@ -641,7 +641,7 @@
               <div class="existing-review">
                 <div class="review-content">
                   <small class="review-date">Проверка #{post.reviews.length - index} • {formatDate(review.createdAt)}</small>
-                  <p>{getReviewText(review.reviewData)}</p>
+                  <p style="white-space: pre-wrap;">{getReviewText(review.reviewData)}</p>
                 </div>
               </div>
             {/each}
