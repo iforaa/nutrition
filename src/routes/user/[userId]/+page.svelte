@@ -25,6 +25,10 @@
   let showCreatePostForm = false;
   let creatingPost = false;
   let selectedTags: Set<string> = new Set();
+  let editingPost: { [key: string]: boolean } = {};
+  let editingReview: { [key: string]: boolean } = {};
+  let editPostData: { [key: string]: { title: string, description: string } } = {};
+  let editReviewText: { [key: string]: string } = {};
 
   // Helper function to determine post type from content
   function getPostType(post: any): 'image' | 'pdf' | 'text' {
@@ -384,8 +388,78 @@
           </div>
         </div>
 
+        <!-- Edit Post -->
+        <div class="edit-post-section">
+          {#if editingPost[post.id]}
+            <form
+              method="POST"
+              action="?/updatePost"
+              use:enhance={({ formData }) => {
+                formData.append('postId', post.id);
+                loading[post.id] = true;
+
+                return async ({ result, update }) => {
+                  loading[post.id] = false;
+                  if (result.type === 'success') {
+                    editingPost[post.id] = false;
+                  }
+                  await update();
+                };
+              }}
+            >
+              <div class="form-group">
+                <label for="edit-title-{post.id}">Название:</label>
+                <input
+                  type="text"
+                  id="edit-title-{post.id}"
+                  name="title"
+                  bind:value={editPostData[post.id].title}
+                  required
+                  disabled={loading[post.id]}
+                />
+              </div>
+              <div class="form-group">
+                <label for="edit-description-{post.id}">Описание:</label>
+                <textarea
+                  id="edit-description-{post.id}"
+                  name="description"
+                  bind:value={editPostData[post.id].description}
+                  rows="3"
+                  disabled={loading[post.id]}
+                ></textarea>
+              </div>
+              <div class="edit-actions">
+                <button type="submit" class="save-button" disabled={loading[post.id]}>
+                  {#if loading[post.id]}
+                    <Clock class="inline-icon" />
+                    Сохранение...
+                  {:else}
+                    Сохранить
+                  {/if}
+                </button>
+                <button type="button" class="cancel-button" on:click={() => editingPost[post.id] = false}>
+                  Отмена
+                </button>
+              </div>
+            </form>
+          {:else}
+            <button
+              class="edit-post-button"
+              on:click={() => {
+                editingPost[post.id] = true;
+                editPostData[post.id] = {
+                  title: post.title,
+                  description: post.description || ''
+                };
+              }}
+            >
+              Редактировать пост
+            </button>
+          {/if}
+        </div>
+
         <!-- Show description first if no content -->
-        {#if post.description}
+        {#if post.description && !editingPost[post.id]}
           <div class="post-description">
             <strong>Описание:</strong>
             <p class="formatted-text">{post.description}</p>
@@ -407,7 +481,6 @@
               </a>
             {/if}
           </div>
-        {/if}
 
           <!-- Analyze food button - HIDDEN FOR NOW -->
           <!-- <form
@@ -501,7 +574,9 @@
               {/if}
             </div>
           {/if}
-        {:else if getPostType(post) === 'pdf' && post.content}
+        {/if}
+
+        {#if getPostType(post) === 'pdf' && post.content}
           <!-- Extract button for PDFs -->
           <form
             method="POST"
@@ -658,17 +733,71 @@
             <h4 class="reviews-title">Обсуждение ({post.reviews.length})</h4>
             {#each post.reviews as review, index}
               <div class="existing-review" class:user-comment={review.isUserComment}>
-                <div class="review-content">
-                  <small class="review-date">
-                    {#if review.isUserComment}
-                      👤
-                    {:else}
-                      👨‍⚕️
-                    {/if}
-                    {review.user?.name || review.reviewerName} • {formatDate(review.createdAt)}
-                  </small>
-                  <p style="white-space: pre-wrap;">{getReviewText(review.reviewData)}</p>
-                </div>
+                {#if editingReview[review.id]}
+                  <form
+                    method="POST"
+                    action="?/updateReview"
+                    use:enhance={({ formData }) => {
+                      formData.append('reviewId', review.id);
+                      loading[review.id] = true;
+
+                      return async ({ result, update }) => {
+                        loading[review.id] = false;
+                        if (result.type === 'success') {
+                          editingReview[review.id] = false;
+                        }
+                        await update();
+                      };
+                    }}
+                  >
+                    <textarea
+                      name="reviewText"
+                      bind:value={editReviewText[review.id]}
+                      rows="4"
+                      required
+                      disabled={loading[review.id]}
+                      class="edit-review-textarea"
+                    ></textarea>
+                    <div class="edit-actions">
+                      <button type="submit" class="save-button" disabled={loading[review.id]}>
+                        {#if loading[review.id]}
+                          <Clock class="inline-icon" />
+                          Сохранение...
+                        {:else}
+                          Сохранить
+                        {/if}
+                      </button>
+                      <button type="button" class="cancel-button" on:click={() => editingReview[review.id] = false}>
+                        Отмена
+                      </button>
+                    </div>
+                  </form>
+                {:else}
+                  <div class="review-content">
+                    <div class="review-header-with-actions">
+                      <small class="review-date">
+                        {#if review.isUserComment}
+                          👤
+                        {:else}
+                          👨‍⚕️
+                        {/if}
+                        {review.user?.name || review.reviewerName} • {formatDate(review.createdAt)}
+                      </small>
+                      {#if !review.isUserComment}
+                        <button
+                          class="edit-review-button"
+                          on:click={() => {
+                            editingReview[review.id] = true;
+                            editReviewText[review.id] = getReviewText(review.reviewData);
+                          }}
+                        >
+                          Редактировать
+                        </button>
+                      {/if}
+                    </div>
+                    <p style="white-space: pre-wrap;">{getReviewText(review.reviewData)}</p>
+                  </div>
+                {/if}
               </div>
             {/each}
           </div>
@@ -1577,5 +1706,141 @@
 
   .macro-card.calories .macro-value {
     color: #f44336;
+  }
+
+  .edit-post-section {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e3e8ee;
+  }
+
+  .edit-post-section input,
+  .edit-post-section textarea {
+    width: 100%;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid #e3e8ee;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.875rem;
+    margin-bottom: 0.75rem;
+    transition: border-color 0.15s ease;
+  }
+
+  .edit-post-section input:focus,
+  .edit-post-section textarea:focus {
+    outline: none;
+    border-color: #4CAF50;
+  }
+
+  .edit-post-section textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  .edit-post-button {
+    padding: 0.375rem 0.75rem;
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 0.8125rem;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .edit-post-button:hover {
+    background: #5a6268;
+  }
+
+  .review-header-with-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .edit-review-button {
+    padding: 0.25rem 0.5rem;
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: all 0.15s ease;
+  }
+
+  .edit-review-button:hover {
+    background: #5a6268;
+  }
+
+  .edit-review-textarea {
+    width: 100%;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid #e3e8ee;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.875rem;
+    resize: vertical;
+    min-height: 100px;
+    margin-bottom: 0.75rem;
+    transition: border-color 0.15s ease;
+  }
+
+  .edit-review-textarea:focus {
+    outline: none;
+    border-color: #4CAF50;
+  }
+
+  .edit-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .save-button {
+    padding: 0.5rem 1rem;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+  }
+
+  .save-button:hover:not(:disabled) {
+    background: #45a049;
+  }
+
+  .save-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .cancel-button {
+    padding: 0.5rem 1rem;
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.15s ease;
+  }
+
+  .cancel-button:hover {
+    background: #5a6268;
   }
 </style>

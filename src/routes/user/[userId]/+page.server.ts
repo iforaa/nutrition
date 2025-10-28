@@ -187,6 +187,52 @@ export const actions: Actions = {
     }
   },
 
+  updateReview: async ({ request }) => {
+    const formData = await request.formData();
+    const reviewId = formData.get('reviewId')?.toString();
+    const reviewText = formData.get('reviewText')?.toString();
+
+    if (!reviewId || !reviewText) {
+      return fail(400, { error: 'All fields are required' });
+    }
+
+    try {
+      await db.update(nutritionReviews)
+        .set({ reviewData: { text: reviewText } })
+        .where(eq(nutritionReviews.id, reviewId));
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating review:', error);
+      return fail(500, { error: 'Failed to update review' });
+    }
+  },
+
+  updatePost: async ({ request }) => {
+    const formData = await request.formData();
+    const postId = formData.get('postId')?.toString();
+    const title = formData.get('title')?.toString();
+    const description = formData.get('description')?.toString();
+
+    if (!postId || !title) {
+      return fail(400, { error: 'Post ID and title are required' });
+    }
+
+    try {
+      await db.update(posts)
+        .set({
+          title,
+          description: description || null
+        })
+        .where(eq(posts.id, postId));
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating post:', error);
+      return fail(500, { error: 'Failed to update post' });
+    }
+  },
+
   extractPDF: async ({ request }) => {
     console.log('=== extractPDF action started ===');
     const formData = await request.formData();
