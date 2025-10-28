@@ -4,6 +4,16 @@ import { db } from '$lib/database/connection';
 import { posts, nutritionReviews, users } from '$lib/database/schema';
 import { eq, desc } from 'drizzle-orm';
 
+// Helper function to determine post type
+function getPostType(post: any): 'image' | 'pdf' {
+	if (post.photos && post.photos.length > 0) return 'image';
+	if (post.content) {
+		if (typeof post.content === 'string' && post.content.toLowerCase().endsWith('.pdf')) return 'pdf';
+		return 'image';
+	}
+	return 'image'; // Default for text-only posts
+}
+
 // GET /api/mobile/posts - Get all posts for a user
 export const GET: RequestHandler = async ({ url }) => {
 	const userEmail = url.searchParams.get('email');
@@ -34,8 +44,8 @@ export const GET: RequestHandler = async ({ url }) => {
 		// Transform to mobile app format
 		const transformedPosts = userPosts.map(post => ({
 			id: post.id,
-			type: post.type,
-			content: post.content,
+			type: getPostType(post),
+			content: post.content || '',
 			title: post.title,
 			date: formatDate(post.createdAt),
 			testId: post.testId,
@@ -58,9 +68,9 @@ export const GET: RequestHandler = async ({ url }) => {
 export const POST: RequestHandler = async ({ request }) => {
 	try {
 		const data = await request.json();
-		const { email, title, type, content, testId } = data;
+		const { email, title, content, testId } = data;
 
-		if (!email || !title || !type || !content) {
+		if (!email || !title) {
 			return json({ error: 'Missing required fields' }, { status: 400 });
 		}
 
@@ -79,8 +89,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			.values({
 				userId: user.id,
 				title,
-				type,
-				content,
+				content: content || null,
 				testId: testId || null,
 				processed: false
 			})

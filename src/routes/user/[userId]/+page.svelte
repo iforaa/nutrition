@@ -26,6 +26,16 @@
   let creatingPost = false;
   let selectedTags: Set<string> = new Set();
 
+  // Helper function to determine post type from content
+  function getPostType(post: any): 'image' | 'pdf' | 'text' {
+    if (post.photos && post.photos.length > 0) return 'image';
+    if (post.content) {
+      if (post.content.toLowerCase().endsWith('.pdf')) return 'pdf';
+      return 'image'; // Assume other content URLs are images
+    }
+    return 'text'; // No content = text-only post
+  }
+
   $: filteredPosts = selectedTags.size === 0
     ? data.posts
     : data.posts.filter(post => {
@@ -283,19 +293,19 @@
               {/if}
             </button>
             <span class="post-icon">
-              {#if post.type === 'image'}
-                <ImageIcon />
-              {:else}
+              {#if getPostType(post) === 'pdf'}
                 <Document />
+              {:else}
+                <ImageIcon />
               {/if}
             </span>
             <div class="post-details">
               <strong>{post.title}</strong>
-              <span class="post-meta">{formatDate(post.createdAt)} • {post.type.toUpperCase()}</span>
+              <span class="post-meta">{formatDate(post.createdAt)}</span>
             </div>
           </div>
           <div class="post-actions" on:click|stopPropagation>
-            {#if post.type === 'pdf' && post.content}
+            {#if getPostType(post) === 'pdf' && post.content}
               <a href={post.content} target="_blank" class="view-link">
                 <Document class="inline-icon" />
                 Открыть PDF
@@ -383,7 +393,7 @@
         {/if}
 
         <!-- Preview for images -->
-        {#if post.type === 'image' && post.content}
+        {#if getPostType(post) === 'image' && post.content}
           <div class="image-gallery">
             {#if post.photos && post.photos.length > 0}
               {#each post.photos as photo}
@@ -491,7 +501,7 @@
               {/if}
             </div>
           {/if}
-        {:else if post.type === 'pdf' && post.content}
+        {:else if getPostType(post) === 'pdf' && post.content}
           <!-- Extract button for PDFs -->
           <form
             method="POST"

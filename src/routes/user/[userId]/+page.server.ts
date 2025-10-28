@@ -63,13 +63,13 @@ export const actions: Actions = {
 
     try {
       let fileUrl: string | null = null;
-      let type: 'image' | 'pdf' | null = null;
+      let isImage = false;
 
       // Upload file if provided
       if (file && file.size > 0) {
-        // Auto-detect type from file
-        type = file.type?.startsWith('image/') ? 'image' : 'pdf';
-        console.log('Type:', type);
+        // Check if it's an image
+        isImage = file.type?.startsWith('image/') || false;
+        console.log('File type:', isImage ? 'image' : 'pdf');
 
         const CLOUDFLARE_WORKER_URL = 'https://orange-voice-eda1.igor-n-kuz8044.workers.dev';
         const uploadFormData = new FormData();
@@ -99,9 +99,8 @@ export const actions: Actions = {
         .values({
           userId,
           title,
-          type: type || 'image', // Default to image if no file
-          content: fileUrl || '', // Empty string if no file
-          photos: type === 'image' && fileUrl ? [fileUrl] : undefined,
+          content: fileUrl || null, // Null if no file
+          photos: isImage && fileUrl ? [fileUrl] : undefined,
           description: description || null,
           tag: tag || null,
           processed: false
