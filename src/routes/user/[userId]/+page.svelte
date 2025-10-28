@@ -326,6 +326,22 @@
                 Ожидает
               </span>
             {/if}
+            {#if expandedPosts[post.id]}
+              <button
+                class="edit-post-button-header"
+                on:click|stopPropagation={() => {
+                  editingPost[post.id] = !editingPost[post.id];
+                  if (editingPost[post.id]) {
+                    editPostData[post.id] = {
+                      title: post.title,
+                      description: post.description || ''
+                    };
+                  }
+                }}
+              >
+                Редактировать
+              </button>
+            {/if}
             <form
               method="POST"
               action="?/deletePost"
@@ -387,24 +403,6 @@
             </label>
           </div>
         </div>
-
-        <!-- Edit Post Button -->
-        {#if !editingPost[post.id]}
-          <div class="edit-post-button-wrapper">
-            <button
-              class="edit-post-button-header"
-              on:click={() => {
-                editingPost[post.id] = true;
-                editPostData[post.id] = {
-                  title: post.title,
-                  description: post.description || ''
-                };
-              }}
-            >
-              Редактировать
-            </button>
-          </div>
-        {/if}
 
         <!-- Edit Post Form -->
         {#if editingPost[post.id]}
@@ -1124,24 +1122,18 @@
     background: #0056b3;
   }
 
-  .edit-post-button-wrapper {
-    margin-top: 1rem;
-  }
-
   .edit-post-button-header {
-    padding: 0.625rem 1rem;
+    padding: 0.375rem 0.75rem;
     background: #6c757d;
     color: white;
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     font-weight: 500;
     transition: all 0.15s ease;
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: 100%;
   }
 
   .edit-post-button-header:hover {
