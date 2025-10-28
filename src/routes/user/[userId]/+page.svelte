@@ -315,7 +315,7 @@
                 Открыть PDF
               </a>
             {/if}
-            {#if post.reviews.length > 0}
+            {#if post.reviews.some(r => !r.isUserComment)}
               <span class="status-badge reviewed">
                 <Check class="inline-icon" />
                 Проверено
