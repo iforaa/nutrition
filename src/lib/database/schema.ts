@@ -24,6 +24,8 @@ export const posts = pgTable('posts', {
   testId: varchar('test_id', { length: 50 }), // for PDF tests: 'blood', 'hormone', etc.
   processed: boolean('processed').default(false).notNull(),
   extractedData: jsonb('extracted_data'),
+  commentsAllowed: boolean('comments_allowed').default(true).notNull(), // Whether user can comment
+  tag: varchar('tag', { length: 50 }), // 'food', 'test', 'question', null
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

@@ -204,12 +204,7 @@
             </div>
           </div>
           <div class="post-actions" on:click|stopPropagation>
-            {#if post.type === 'image'}
-              <a href={post.content} target="_blank" class="view-link">
-                <Eye class="inline-icon" />
-                Посмотреть фото
-              </a>
-            {:else if post.type === 'pdf'}
+            {#if post.type === 'pdf'}
               <a href={post.content} target="_blank" class="view-link">
                 <Document class="inline-icon" />
                 Открыть PDF
@@ -265,65 +260,35 @@
           <div class="image-gallery">
             {#if post.photos && post.photos.length > 0}
               {#each post.photos as photo}
-                <div class="image-preview">
+                <a href={photo} target="_blank" class="image-preview clickable">
                   <img src={photo} alt={post.title} />
-                </div>
+                </a>
               {/each}
             {:else}
-              <div class="image-preview">
+              <a href={post.content} target="_blank" class="image-preview clickable">
                 <img src={post.content} alt={post.title} />
-              </div>
+              </a>
             {/if}
           </div>
 
           {#if post.description}
             <div class="post-description">
               <strong>Описание:</strong>
-              <p>{post.description}</p>
+              <p class="formatted-text">{post.description}</p>
             </div>
           {/if}
 
-          <!-- Analyze food button for images -->
-          <form
+          <!-- Analyze food button - HIDDEN FOR NOW -->
+          <!-- <form
             method="POST"
             action="?/analyzeFood"
             class="extract-form"
-            use:enhance={({ formData }) => {
-              console.log('=== Analyze food form submitted ===');
-              console.log('Post ID:', post.id);
-              formData.append('postId', post.id);
-              analyzing[post.id] = true;
-
-              return async ({ result, update }) => {
-                console.log('=== Analyze food response received ===');
-                console.log('Result type:', result.type);
-                console.log('Result data:', result);
-                analyzing[post.id] = false;
-
-                if (result.type === 'failure') {
-                  console.error('Analysis failed:', result.data);
-                  alert('Ошибка анализа еды: ' + (result.data?.error || 'Неизвестная ошибка'));
-                } else if (result.type === 'success') {
-                  console.log('Analysis successful!');
-                }
-
-                await update();
-              };
-            }}
           >
-            <button type="submit" class="extract-button" disabled={analyzing[post.id] || hasFoodAnalysis(post)}>
-              {#if analyzing[post.id]}
-                <Clock class="inline-icon" />
-                Анализ еды...
-              {:else if hasFoodAnalysis(post)}
-                <Check class="inline-icon" />
-                Еда проанализирована
-              {:else}
-                <Food class="inline-icon" />
-                Анализировать еду
-              {/if}
+            <button type="submit" class="extract-button">
+              <Food class="inline-icon" />
+              Анализировать еду
             </button>
-          </form>
+          </form> -->
 
           <!-- Display food analysis data -->
           {#if hasFoodAnalysis(post)}
@@ -1013,6 +978,16 @@
     display: block;
   }
 
+  .image-preview.clickable {
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .image-preview.clickable:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
   .post-description {
     margin-top: 1rem;
     background: #f8f9fa;
@@ -1034,6 +1009,11 @@
     color: #2c3e50;
     line-height: 1.5;
     font-size: 0.875rem;
+  }
+
+  .formatted-text {
+    white-space: pre-wrap;
+    word-wrap: break-word;
   }
 
   .review-form {
