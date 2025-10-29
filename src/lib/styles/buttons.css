@@ -1,0 +1,122 @@
+/* Shared button styles */
+
+/* Primary action buttons */
+.save-button {
+  padding: 0.5rem 1rem;
+  background: #0f172a;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+}
+
+.save-button:hover:not(:disabled) {
+  background: #1e293b;
+}
+
+.save-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Cancel button */
+.cancel-button {
+  padding: 0.5rem 1rem;
+  background: white;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.15s ease;
+}
+
+.cancel-button:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+/* Extract button */
+.extract-button {
+  padding: 0.5rem 1rem;
+  background: #475569;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.15s ease;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.extract-button:hover:not(:disabled) {
+  background: #334155;
+}
+
+.extract-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Delete extracted data button */
+.delete-extracted-button {
+  padding: 0.375rem 0.75rem;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+}
+
+.delete-extracted-button:hover:not(:disabled) {
+  background: #c82333;
+}
+
+.delete-extracted-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Edit buttons */
+.edit-post-button,
+.edit-review-button {
+  padding: 0.375rem 0.75rem;
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.edit-review-button {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+.edit-post-button:hover,
+.edit-review-button:hover {
+  background: #5a6268;
+}

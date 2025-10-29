@@ -1,0 +1,173 @@
+/* Extracted data displays - medical tests and food analysis */
+
+.extracted-data {
+  margin-top: 1rem;
+  background: #f8f9fa;
+  padding: 1.25rem;
+  border-radius: 8px;
+  border: 1px solid #2196F3;
+}
+
+.extracted-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.extracted-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+}
+
+/* Test info section */
+.test-info {
+  background: white;
+  padding: 0.875rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  border: 1px solid #e3e8ee;
+}
+
+.info-row {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.info-row:last-child {
+  margin-bottom: 0;
+}
+
+.info-row strong {
+  color: #6c757d;
+  min-width: 110px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.info-row span {
+  color: #2c3e50;
+  font-weight: 500;
+  font-size: 0.8125rem;
+}
+
+/* Summary box */
+.summary-box {
+  background: #fff3cd;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  border-left: 4px solid #ffc107;
+}
+
+.summary-box strong {
+  display: block;
+  color: #856404;
+  margin-bottom: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.summary-box p {
+  margin: 0;
+  color: #2c3e50;
+  line-height: 1.5;
+  font-size: 0.875rem;
+}
+
+/* Medical test results table */
+.results-table-wrapper {
+  overflow-x: auto;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.results-table thead {
+  background: #2196F3;
+}
+
+.results-table th {
+  color: white;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.result-value {
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+/* Food macros grid */
+.macros-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.macro-card {
+  background: white;
+  padding: 1rem;
+  border-radius: 6px;
+  text-align: center;
+  border: 2px solid;
+  transition: all 0.15s ease;
+}
+
+.macro-card:hover {
+  transform: translateY(-2px);
+}
+
+.macro-card.protein {
+  border-color: #e91e63;
+}
+
+.macro-card.carbs {
+  border-color: #ff9800;
+}
+
+.macro-card.fats {
+  border-color: #4CAF50;
+}
+
+.macro-card.calories {
+  border-color: #f44336;
+}
+
+.macro-label {
+  font-size: 0.75rem;
+  color: #6c757d;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.macro-value {
+  font-size: 1.375rem;
+  font-weight: 600;
+  color: #2c3e50;
+  letter-spacing: -0.01em;
+}
+
+.macro-card.protein .macro-value {
+  color: #e91e63;
+}
+
+.macro-card.carbs .macro-value {
+  color: #ff9800;
+}
+
+.macro-card.fats .macro-value {
+  color: #4CAF50;
+}
+
+.macro-card.calories .macro-value {
+  color: #f44336;
+}
