@@ -25,6 +25,7 @@ export const posts = pgTable('posts', {
   extractedData: jsonb('extracted_data'),
   commentsAllowed: boolean('comments_allowed').default(true).notNull(), // Whether user can comment
   tag: varchar('tag', { length: 50 }), // 'food', 'test', 'question', null
+  happenedAt: timestamp('happened_at'), // When the event happened (food consumed, test taken, etc.)
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

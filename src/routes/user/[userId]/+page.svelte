@@ -207,7 +207,8 @@
                 <tr>
                     <th style="width: 40px;"></th>
                     <th>Название</th>
-                    <th>Дата</th>
+                    <th>Дата создания</th>
+                    <th>Время события</th>
                     <th>Тег</th>
                     <th>Статус</th>
                     <th>Действия</th>
@@ -249,6 +250,13 @@
                             </div>
                         </td>
                         <td class="cell-date">{formatDate(post.createdAt)}</td>
+                        <td class="cell-date">
+                            {#if post.happenedAt}
+                                {formatDate(post.happenedAt)}
+                            {:else}
+                                <span style="color: #999; font-style: italic;">не указано</span>
+                            {/if}
+                        </td>
                         <td on:click|stopPropagation>
                             <TagSelect
                                 id="tag-{post.id}"
@@ -332,7 +340,7 @@
 
                     {#if expandedPosts[post.id]}
                         <tr class="detail-row">
-                            <td colspan="6">
+                            <td colspan="7">
                                 <div
                                     class="detail-content"
                                     transition:slide={{ duration: 200 }}

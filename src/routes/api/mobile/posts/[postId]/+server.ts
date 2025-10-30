@@ -33,7 +33,7 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
       return json({ error: 'postId is required' }, { status: 400 });
     }
 
-    const { title, photos, description } = await request.json();
+    const { title, photos, description, happenedAt } = await request.json();
 
     // Build update object with only provided fields
     const updateData: any = {
@@ -43,6 +43,7 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
     if (title !== undefined) updateData.title = title;
     if (photos !== undefined) updateData.photos = photos;
     if (description !== undefined) updateData.description = description;
+    if (happenedAt !== undefined) updateData.happenedAt = happenedAt ? new Date(happenedAt) : null;
 
     const [updatedPost] = await db
       .update(posts)

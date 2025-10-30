@@ -54,7 +54,8 @@ export const GET: RequestHandler = async ({ url }) => {
 			photos: post.photos as string[] | undefined,
 			description: post.description,
 			commentsAllowed: post.commentsAllowed !== false,
-			tag: post.tag
+			tag: post.tag,
+			happenedAt: post.happenedAt?.toISOString() || null
 		}));
 
 		return json({ posts: transformedPosts });
