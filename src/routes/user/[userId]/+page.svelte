@@ -207,7 +207,6 @@
                 <tr>
                     <th style="width: 40px;"></th>
                     <th>Название</th>
-                    <th>Дата создания</th>
                     <th>Время события</th>
                     <th>Тег</th>
                     <th>Статус</th>
@@ -249,7 +248,6 @@
                                 {/if}
                             </div>
                         </td>
-                        <td class="cell-date">{formatDate(post.createdAt)}</td>
                         <td class="cell-date">
                             {#if post.happenedAt}
                                 {formatDate(post.happenedAt)}
@@ -340,7 +338,7 @@
 
                     {#if expandedPosts[post.id]}
                         <tr class="detail-row">
-                            <td colspan="7">
+                            <td colspan="6">
                                 <div
                                     class="detail-content"
                                     transition:slide={{ duration: 200 }}
