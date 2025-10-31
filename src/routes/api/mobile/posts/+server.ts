@@ -42,21 +42,27 @@ export const GET: RequestHandler = async ({ url }) => {
 		});
 
 		// Transform to mobile app format
-		const transformedPosts = userPosts.map(post => ({
-			id: post.id,
-			type: getPostType(post),
-			content: post.content || '',
-			title: post.title,
-			date: formatDate(post.createdAt),
-			testId: post.testId,
-			hasReview: post.reviews.length > 0,
-			reviewId: post.reviews[0]?.id,
-			photos: post.photos as string[] | undefined,
-			description: post.description,
-			commentsAllowed: post.commentsAllowed !== false,
-			tag: post.tag,
-			happenedAt: post.happenedAt?.toISOString() || null
-		}));
+		const transformedPosts = userPosts.map(post => {
+			// Count user comments (reviews where isUserComment is true)
+			const commentCount = post.reviews.filter(review => review.isUserComment === true).length;
+
+			return {
+				id: post.id,
+				type: getPostType(post),
+				content: post.content || '',
+				title: post.title,
+				date: formatDate(post.createdAt),
+				testId: post.testId,
+				hasReview: post.reviews.length > 0,
+				reviewId: post.reviews[0]?.id,
+				photos: post.photos as string[] | undefined,
+				description: post.description,
+				commentsAllowed: post.commentsAllowed !== false,
+				tag: post.tag,
+				happenedAt: post.happenedAt?.toISOString() || null,
+				commentCount
+			};
+		});
 
 		return json({ posts: transformedPosts });
 	} catch (error) {
