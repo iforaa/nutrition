@@ -43,8 +43,8 @@ export const GET: RequestHandler = async ({ url }) => {
 
 		// Transform to mobile app format
 		const transformedPosts = userPosts.map(post => {
-			// Count user comments (reviews where isUserComment is true)
-			const commentCount = post.reviews.filter(review => review.isUserComment === true).length;
+			// Count all reviews (both doctor reviews and user comments)
+			const commentCount = post.reviews.length;
 
 			return {
 				id: post.id,
