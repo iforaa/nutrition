@@ -26,6 +26,7 @@ export const GET: RequestHandler = async ({ params }) => {
         ? comment.reviewData.text
         : (typeof comment.reviewData === 'string' ? comment.reviewData : ''),
       userName: comment.user?.name || comment.reviewerName,
+      userId: comment.userId,
       createdAt: comment.createdAt.toISOString()
     }));
 
