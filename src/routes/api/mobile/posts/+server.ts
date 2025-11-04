@@ -90,6 +90,9 @@ export const POST: RequestHandler = async ({ request }) => {
 			return json({ error: 'User not found' }, { status: 404 });
 		}
 
+		// Text-only posts get 'question' tag automatically
+		const tag = 'question';
+
 		// Create post
 		const [newPost] = await db
 			.insert(posts)
@@ -98,6 +101,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				title,
 				content: content || null,
 				testId: testId || null,
+				tag,
 				processed: false
 			})
 			.returning();

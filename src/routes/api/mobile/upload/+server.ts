@@ -48,16 +48,24 @@ export const POST: RequestHandler = async ({ request }) => {
 		const uploadResult = await uploadResponse.json();
 		const fileUrl = uploadResult.url;
 
+		// Determine tag based on file type
+		let tag: 'food' | 'test' | null = null;
+		if (type === 'pdf' || file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+			tag = 'test';
+		} else if (type === 'image' || file.type.startsWith('image/')) {
+			tag = 'food';
+		}
+
 		// Create post in database
 		const [newPost] = await db
 			.insert(posts)
 			.values({
 				userId: user.id,
 				title,
-				type,
 				content: fileUrl, // Store Cloudflare URL
 				testId: testId || null,
 				happenedAt: happenedAt ? new Date(happenedAt) : null,
+				tag,
 				processed: false
 			})
 			.returning();
