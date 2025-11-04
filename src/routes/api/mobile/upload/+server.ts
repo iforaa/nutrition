@@ -50,9 +50,12 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		// Determine tag based on file type
 		let tag: 'food' | 'test' | null = null;
-		if (type === 'pdf' || file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+		const isImage = type === 'image' || file.type.startsWith('image/');
+		const isPdf = type === 'pdf' || file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+
+		if (isPdf) {
 			tag = 'test';
-		} else if (type === 'image' || file.type.startsWith('image/')) {
+		} else if (isImage) {
 			tag = 'food';
 		}
 
@@ -63,6 +66,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				userId: user.id,
 				title,
 				content: fileUrl, // Store Cloudflare URL
+				photos: isImage ? [fileUrl] : null, // For images, also store in photos array
 				testId: testId || null,
 				happenedAt: happenedAt ? new Date(happenedAt) : null,
 				tag,
