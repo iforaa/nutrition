@@ -16,6 +16,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		const type = formData.get('type') as string;
 		const testId = formData.get('testId') as string | null;
 		const happenedAt = formData.get('happenedAt') as string | null;
+		const description = formData.get('description') as string | null;
 
 		if (!file || !email || !title || !type) {
 			return json({ error: 'Missing required fields' }, { status: 400 });
@@ -67,6 +68,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				title,
 				content: fileUrl, // Store Cloudflare URL
 				photos: isImage ? [fileUrl] : null, // For images, also store in photos array
+				description: description || null,
 				testId: testId || null,
 				happenedAt: happenedAt ? new Date(happenedAt) : null,
 				tag,
