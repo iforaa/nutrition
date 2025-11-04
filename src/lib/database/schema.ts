@@ -19,6 +19,7 @@ export const posts = pgTable('posts', {
   title: varchar('title', { length: 255 }).notNull(),
   content: text('content'), // URL or file path (photo/pdf), nullable for text-only posts
   photos: jsonb('photos'), // Array of photo URLs for multi-photo posts: ['url1', 'url2']
+  pdfs: jsonb('pdfs'), // Array of PDF URLs: ['url1', 'url2']
   description: text('description'), // User text/description for the post
   testId: varchar('test_id', { length: 50 }), // for PDF tests: 'blood', 'hormone', etc.
   processed: boolean('processed').default(false).notNull(),
